@@ -1,0 +1,67 @@
+namespace: hazelcast
+
+
+hazelcast:
+  defines: runnable
+  metadata:
+    defines: metadata
+    name: Hazelcast
+    description: 
+    tags: 
+    website: 
+    source: 
+    publisher: "monk.io"
+    icon: 
+  containers:
+    defines: containers
+    hazelcast:  
+      image: docker.io/hazelcast/hazelcast
+      image-tag: <- `${hazelcast-image}`
+      ports:
+      - 5701:5701
+      environment:
+        - HAZELCAST_CONFIG=hazelcast-config.yml
+  files:
+    hazelcast-config:
+      container: hazelcast
+      mode: 0644
+      path: /opt/hazelcast/hazelcast-config.yml
+      contents: <<< files/hazelcast-config.yml       
+  variables:
+    defines: variables
+    hazelcast-image:
+      value: <- $hazelcast-image-tag
+      type: string
+
+hazelcast-management:
+  defines: runnable
+  metadata:
+    defines: metadata
+    name: Hazelcast
+    description: 
+    tags: 
+    website: 
+    source: 
+    publisher: "monk.io"
+    icon: 
+  containers:
+    defines: containers
+    hazelcast:  
+      image: docker.io/hazelcast/management-center
+      image-tag: <- `${hazelcast-image}`
+      ports:
+      - 8081:8080
+      environment:
+        - <- `MC_DEFAULT_CLUSTER_MEMBERS=${hazelcast-servers}:5701`
+        - MC_DEFAULT_CLUSTER=test
+        - MC_ALLOW_MULTIPLE_LOGIN=true
+        - MC_ADMIN_USER=admin
+        - MC_ADMIN_PASSWORD=hazelcast12      
+  variables:
+    defines: variables
+    hazelcast-image:
+      value: <- $hazelcast-image-tag
+      type: string
+    hazelcast-servers:
+      type: string
+      value: <- get-hostname("hazelcast/hazelcast", "hazelcast") split(".dns.podman") join("") concat-all
